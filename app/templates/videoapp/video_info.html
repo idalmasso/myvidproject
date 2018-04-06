@@ -1,0 +1,59 @@
+{% extends "basetemplate.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block appcontent %}
+
+<div class="container">
+    <h1>{{ video.title }}</h1>
+    <div class="row">
+        <div class="col-md-4 order-md-1">
+            <ul class="list-group mb-3">
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Duration</h6>
+                    <small class="text-muted">{{ video.duration }}</small>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Rating</h6>
+                    <small class="text-muted">{{ video.rating }}/10</small>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Description</h6>
+                    <small class="text-muted">{{ video.description }}</small>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Release date</h6>
+                    <small class="text-muted">{{ video.release_date }}</small>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Genres</h6>
+                    <small class="text-muted">{{ ','.join(video.genre) }}</small>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Cast</h6>
+                    <small class="text-muted">{{ ' ; '.join(video.actors) }}</small>
+                </li>
+                <br>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+
+                    <form action="{{ url_for('videoapp.video_info', id=video.id) }}" method=post class=del-component>
+                        <button class="btn btn-success">
+                        UPDATE INFO
+                        </button>
+                    </form>
+                    <br>
+                    <form action="{{ url_for('videoapp.video', id=video.id) }}" method=get class=del-component>
+                        <button class="btn btn-success">
+                        VIEW
+                        </button>
+                    </form>
+
+                </li>
+            </ul>
+        </div>
+      <div class="col-md-4 order-md-2">
+          <img src="{{ video.image }}"/>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}

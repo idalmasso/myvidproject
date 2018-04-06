@@ -1,0 +1,17 @@
+{% extends "basetemplate.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block appcontent %}
+<h1>Log in</h1>
+<div class="row">
+    <div class="col-md-4">
+        <form class="form form-vertical" method="post" role="form">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_errors(form, hiddens="only") }}
+            {{ wtf.form_field(form.username, class='form-control', placeholder='Your username...')}}
+            {{ wtf.form_field(form.password, class='form-control', placeholder='Your password')}}
+            {{ wtf.form_field(form.remember_me, class='form-checkbox') }}
+            {{ wtf.form_field(form.submit, class='btn btn-success') }}
+        </form>
+    </div>
+</div>
+{% endblock %}

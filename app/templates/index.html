@@ -1,0 +1,4 @@
+{% extends "basetemplate.html" %}
+{% block appcontent %}
+Hello, {% if current_user.is_authenticated %}{{current_user.username}}{% else %} Anon {% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "basetemplate.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block appcontent %}
+<h1>Upload torrent</h1>
+<div class="row">
+    <div class="col-md-4">
+        <form class="form form-vertical" method="post" role="form" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_errors(form, hiddens="only") }}
+            {{ wtf.form_field(form.title, class='form-control', placeholder='Title')}}
+            {{ form.file() }}
+            <br>
+            {{ wtf.form_field(form.submit, class='btn btn-success') }}
+        </form>
+    </div>
+</div>
+{% endblock %}

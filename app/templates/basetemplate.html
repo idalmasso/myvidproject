@@ -1,0 +1,45 @@
+{% extends "bootstrap/base.html" %}
+    {% block title %}
+        {% if title %}{{title}} -{% endif %} my vids
+    {% endblock %}
+    {% block navbar %}
+        <nav class="navbar navbar-default">
+             <div class="container-fluid container">
+                 <div class="navbar-header">
+                     <a class="navbar-brand" href="#">MyVids!</a>
+                 </div>
+                <ul class="nav navbar-nav">
+                    <li><a href="{{ url_for('videoapp.index') }}">Home</a></li>
+                    {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('videoapp.videolist') }}">Videos</a></li>
+                    <li><a href="{{ url_for('videoapp.add_torrent') }}">Upload</a></li>
+                    {% endif %}
+                </ul>
+                 <ul class="nav navbar-nav navbar-right">
+                     <li><a href="{{ url_for('authentication.registration') }}">{{ 'Register' }}</a></li>
+                     {% if current_user.is_anonymous %}
+                    <li><a href="{{ url_for('authentication.login') }}">{{ 'Login' }}</a></li>
+                    {% else %}
+                        {% if current_user.admin %}
+                            <li><a href="{{ url_for('authentication.admin') }}">{{ 'Admin' }}</a></li>
+                        {% endif %}
+                    <li><a href="{{ url_for('authentication.logout') }}">{{ 'Logout' }}</a></li>
+                    {% endif %}
+                </ul>
+             </div>
+        </nav>
+    {% endblock %}
+    {% block content %}
+        <div class="container" style="margin-top:50px">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-info alert-dismissible fade in" role="alert">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        {{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block appcontent %}{% endblock %}
+        </div>
+    {% endblock %}
