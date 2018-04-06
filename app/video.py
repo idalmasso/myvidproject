@@ -1,10 +1,12 @@
 from app import mongo
+from flask import current_app
 from bson.objectid import ObjectId
 import os
 from bs4 import BeautifulSoup
 import urllib.request
 import json
 import transmissionrpc
+from werkzeug.utils import secure_filename
 
 
 class Video(object):
@@ -26,8 +28,10 @@ class Video(object):
             self.genre = video.get('genre', None)
             self.actors = video.get('actors', None)
             self.id = str(video.get('_id', ''))
-            self.file_name = os.path.basename(self.file_path)
-
+            self.torrent_status = None
+            self.torrent_id = -1
+            if self.file_path is not None:
+                self.file_name = os.path.basename(self.file_path)
 
     def try_update_from_imdb(self):
         movie_search = Video.getunicode('q={}'.format(self.title)).strip().replace(' ', '+')
@@ -43,22 +47,22 @@ class Video(object):
 
         page = urllib.request.urlopen(url)
         soup = BeautifulSoup(page.read(), 'html.parser')
-        titlewrapper = soup.find('div', {'class': 'title_wrapper'})
-        movie_title = Video.getunicode(titlewrapper.find('h1', {'itemprop': 'name'}).get_text())
+        title_wrapper = soup.find('div', {'class': 'title_wrapper'})
+        movie_title = Video.getunicode(title_wrapper.find('h1', {'itemprop': 'name'}).get_text())
 
-        if titlewrapper.find('div', {'class': 'originalTitle'}) is None:
+        if title_wrapper.find('div', {'class': 'originalTitle'}) is None:
             original_title = movie_title
         else:
-            original_title = Video.getunicode(titlewrapper.find('div', {'class': 'originalTitle'}).get_text())
+            original_title = Video.getunicode(title_wrapper.find('div', {'class': 'originalTitle'}).get_text())
 
-        if titlewrapper.find('time', {'itemprop': 'duration'}) is None:
+        if title_wrapper.find('time', {'itemprop': 'duration'}) is None:
             duration = None
         else:
-            duration = Video.getunicode(titlewrapper.find('time', {'itemprop': 'duration'}).get_text().strip())
-        if titlewrapper.find('meta', {'itemprop': 'datePublished'}) is None:
+            duration = Video.getunicode(title_wrapper.find('time', {'itemprop': 'duration'}).get_text().strip())
+        if title_wrapper.find('meta', {'itemprop': 'datePublished'}) is None:
             release_date=None
         else:
-            release_date = Video.getunicode(titlewrapper.find('meta', {'itemprop': 'datePublished'})['content'])
+            release_date = Video.getunicode(title_wrapper.find('meta', {'itemprop': 'datePublished'})['content'])
         rate = soup.find('span', itemprop='ratingValue')
         if rate is None:
             rating = None
@@ -100,25 +104,32 @@ class Video(object):
             'imdb_id': imdb_id,
             'id': self.id,
             'image_path': self.image_path,
-            'file_path': self.file_path
+            'file_path': self.file_path,
+            'torrent_status':self.torrent_status,
+            'torrent_id': self.torrent_id
         }
         mongo.db.videos.update({'title': self.title}, data)
         return json.dumps(data, sort_keys=True)
 
-    def add_file_to_transmission(file):
+    def add_file_to_transmission(self, file):
         tc = transmissionrpc.Client('localhost', port=9091)
-        tc.add_torrent(file)
-		
-	@staticmethod
+        torr = tc.add_torrent(file, download_dir=current_app.config['FILMS_FOLDER'])
+        self.torrent_id = torr.id
+        torrent = tc.get_torrent(torr.id)
+        self.torrent_status = torrent.status
+
+
+    @staticmethod
     def add_video( title, file=''):
-        if mongo.db.videos.find_one({'title':title}) is not None:
+        if mongo.db.videos.find_one({'title': title}) is not None:
             return None
-        vid_id = mongo.db.videos.insert({'title':title}).inserted_id
+        vid_id = mongo.db.videos.insert({'title': title})
         video = Video.get_video(str(vid_id))
-        video.try_update_from_imdb()
         if file != '':
-            add_file_to_transmission(file)
-		return video
+            video.add_file_to_transmission(file)
+        video.try_update_from_imdb()
+
+        return video
             
     @staticmethod
     def get_list_videos(page_number, video_per_page):

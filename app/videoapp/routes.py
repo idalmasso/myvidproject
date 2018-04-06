@@ -1,10 +1,12 @@
 from app.videoapp import bp
 from app.videoapp.forms import AddTorrentForm
 from flask import url_for, request, render_template, send_from_directory, current_app,flash,redirect
+from werkzeug.utils import secure_filename
 from flask_login import login_required
 from app.video import Video
 import os
 import subprocess
+import base64
 
 
 @bp.route('/')
@@ -61,16 +63,18 @@ def video_info(id):
 def add_torrent():
     form = AddTorrentForm()
     if form.validate_on_submit():
-		Video.add_video(form.title.data)
+
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
         file = request.files['file']
-        if file.filename == ''
+        if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            #file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            Video.add_video(form.title.data, base64.b64encode(file.read()).decode('utf-8'))
             return redirect(url_for('videoapp.videolist'))
         else:
             flash('no secure filename')
@@ -80,4 +84,4 @@ def add_torrent():
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
