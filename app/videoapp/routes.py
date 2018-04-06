@@ -61,5 +61,23 @@ def video_info(id):
 def add_torrent():
     form = AddTorrentForm()
     if form.validate_on_submit():
-        return redirect(url_for('videoapp.videolist'))
+		Video.add_video(form.title.data)
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == ''
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            return redirect(url_for('videoapp.videolist'))
+        else:
+            flash('no secure filename')
+            return redirect(url_for(request.url))
     return render_template('videoapp/add_torrent.html', form=form, title='Add torrent')
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

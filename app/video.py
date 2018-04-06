@@ -4,6 +4,7 @@ import os
 from bs4 import BeautifulSoup
 import urllib.request
 import json
+import transmissionrpc
 
 
 class Video(object):
@@ -104,6 +105,21 @@ class Video(object):
         mongo.db.videos.update({'title': self.title}, data)
         return json.dumps(data, sort_keys=True)
 
+    def add_file_to_transmission(file):
+        tc = transmissionrpc.Client('localhost', port=9091)
+        tc.add_torrent(file)
+		
+	@staticmethod
+    def add_video( title, file=''):
+        if mongo.db.videos.find_one({'title':title}) is not None:
+            return None
+        vid_id = mongo.db.videos.insert({'title':title}).inserted_id
+        video = Video.get_video(str(vid_id))
+        video.try_update_from_imdb()
+        if file != '':
+            add_file_to_transmission(file)
+		return video
+            
     @staticmethod
     def get_list_videos(page_number, video_per_page):
         class Object(object):
