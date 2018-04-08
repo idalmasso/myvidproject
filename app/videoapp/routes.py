@@ -58,7 +58,7 @@ def video_info(id):
         return redirect(url_for('videoapp.videolist'))
     else:
         filename = url_for('videoapp.send_file',id= video.id)
-        return render_template('videoapp/video.html', video=video, title=video.title, filename=filename)
+        return render_template('videoapp/video_info.html', video=video, title=video.title, filename=filename)
 
 
 @bp.route('/add_torrent', methods=['GET', 'POST'])
