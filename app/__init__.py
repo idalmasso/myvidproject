@@ -28,7 +28,7 @@ def create_app(config_class=Config):
     from app.authentication import bp as authentication_bp
     app.register_blueprint(authentication_bp, url_prefix='/auth')
     from app.videoapp import bp as videoapp_bp
-    app.register_blueprint(videoapp_bp, url_prefix='/videoapp')
+    app.register_blueprint(videoapp_bp)
     return app
 from app import usermodel, video
 

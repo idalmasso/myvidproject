@@ -2,7 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block appcontent %}
 <h1>{{ video.title }}</h1>
-<video id="video" controls>>
-    <source src="{{ filename }}" >>
+<video id="video" width="320" height="240" controls>
+    <source src="{{ filename }}" >
 </video>
 {% endblock %}

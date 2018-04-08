@@ -3,14 +3,63 @@
 {% block appcontent %}
 <h1>Video list</h1>
 <table class="table table-hover">
+       <tr>
+        <th>
+            Title
+        </th>
+        <th>
+            Torrent status
+        </th>
+        <th>
+            Torrent progress
+        </th>
+        <th>
+            ETA
+        </th>
+        <th>
+            View
+        </th>
+        {% if current_user.admin %}
+        <th>
+            Delete
+        </th>
+        {% endif %}
+    </tr>
     {% for video in videos %}
     <tr>
         <td>
             <a href="{{ url_for('videoapp.video_info',id=video.id) }}">{{ video.title }}</a>
         </td>
         <td>
-            <a href="{{ url_for('videoapp.video',id=video.id) }}">View</a>
+            {{ video.torrent_status }}
         </td>
+        <td>
+            {% if video.torrent_id > 0 %}
+            {{'%0.2f' % video.torrent_progress|float}}%
+            {% endif %}
+        </td>
+         <td>
+            {% if video.torrent_id > 0 %}
+            {{ video.torrent_eta }}
+            {% endif %}
+        </td>
+        <td>
+            {% if video.torrent_status == 'completed' %}
+            <a href="{{ url_for('videoapp.video',id=video.id) }}">View</a>
+            {% else %}
+            View
+            {% endif %}
+
+        </td>
+        {% if current_user.admin %}
+        <td>
+           <form action="{{ url_for('videoapp.delete_video', id=video.id) }}" method=post class=del-component>
+                <button class="btn btn-danger">
+                    Delete
+                </button>
+            </form>
+        </td>
+        {% endif %}
     </tr>
     {% endfor %}
 </table>

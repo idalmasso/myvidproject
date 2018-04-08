@@ -12,6 +12,7 @@ class Config(object):
     VIDEO_PER_PAGE = 20
     FILMS_FOLDER = '/home/ivano/films'
     ALLOWED_EXTENSIONS = set(['torrent'])
+    VIDEO_EXTENSIONS = set(['.mkv', '.mp4', '.avi', '.webm'])
     ffmpeg = "ffmpeg"
     ffmpeg_transcode_args = {
         "*": ["-f", "mp4", "-strict", "experimental", "-preset", "ultrafast", "-movflags",
