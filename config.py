@@ -10,7 +10,7 @@ class Config(object):
     MONGO_DBNAME = 'video_app_db'
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'secret-key-that_cannot-be-guessed'
     VIDEO_PER_PAGE = 20
-    FILMS_FOLDER = '/home/ivano/films'
+    FILMS_FOLDER = '/media/ivano/74868385-ab6b-4bae-a2b1-f2c9932c5fe3/ivano/Videos'
     ALLOWED_EXTENSIONS = set(['torrent'])
     VIDEO_EXTENSIONS = set(['.mkv', '.mp4', '.avi', '.webm'])
     ffmpeg = "ffmpeg"

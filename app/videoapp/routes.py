@@ -29,8 +29,9 @@ def videolist():
 @login_required
 def video(id):
     video = Video.get_video(id)
+        
     if video.torrent_status == 'completed':
-        filename = 'http://127.0.0.1:8000/videoapp/uploads/' + video.id
+        filename = url_for('videoapp.send_file', id=video.id)
         return render_template('videoapp/video.html', video=video, title=video.title, filename=filename)
     return redirect(url_for('videoapp.videolist'))
 
@@ -39,7 +40,8 @@ def video(id):
 def send_file(id):
     video = Video.get_video(id)
     if video.torrent_status == 'completed':
-        return send_from_directory(current_app.config['FILMS_FOLDER'], video.id+'.mp4')
+        print(video.file_path)
+        return send_from_directory(current_app.config['FILMS_FOLDER'],video.id+'.mp4')
     return redirect(url_for('videoapp.videolist'))
 
 
@@ -55,7 +57,7 @@ def video_info(id):
         video.try_update_from_imdb()
         return redirect(url_for('videoapp.videolist'))
     else:
-        filename = 'http://127.0.0.1:8000/videoapp/uploads/' + video.id
+        filename = url_for('videoapp.send_file',id= video.id)
         return render_template('videoapp/video.html', video=video, title=video.title, filename=filename)
 
 
