@@ -22,7 +22,7 @@ def create_app(config_class=Config):
     with app.app_context():
         mongo.db.users.create_index([('username', ASCENDING)], unique=True)
         mongo.db.user_requests.create_index([('username', ASCENDING)], unique=True)
-        # mongo.db.videos.create_index([('username', ASCENDING)], unique=True)
+        mongo.db.videos.create_index([('title', ASCENDING)], unique=True)
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
     from app.authentication import bp as authentication_bp
