@@ -331,6 +331,3 @@ class Video(object):
             for con in con_list:
                 body = body + Video.getunicode(con)
         return body
-
-
-
