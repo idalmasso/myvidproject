@@ -18,7 +18,7 @@ def index():
 def videolist():
     Video.update_video_torrents_info()
     page = request.args.get('page', 1, type=int)
-    videos = Video.get_list_videos(page, current_app.config['VIDEO_PER_PAGE'])
+    videos = Video.get_list_videos(page, int(current_app.config['VIDEO_PER_PAGE']))
     prev_url = url_for('videoapp.videolist', page=videos.prev) if videos.has_prev else None
     next_url = url_for('videoapp.videolist', page=videos.next) if videos.has_next else None
     return render_template('videoapp/videolist.html', title='Videos',
