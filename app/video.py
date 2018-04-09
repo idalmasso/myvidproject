@@ -196,10 +196,10 @@ class Video(object):
                 subprocess.run(['ffmpeg', '-i', self.file_path, '-f', 'mp4', '-preset', 'fast', '-vcodec', 'libx264',
                                 '-movflags', 'faststart',
                                 os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')])
-                print('REMOVING FILE')
+                print('REMOVING FILE '+self.file_path)
                 os.remove(self.file_path)
             directories = [a for a in os.listdir(app.config['FILMS_FOLDER'] ) if os.path.commonprefix(
-                [a, app.config['FILMS_FOLDER']]) != app.config['FILMS_FOLDER']]
+                [a, app.config['FILMS_FOLDER',self.file_path]]) != app.config['FILMS_FOLDER']]
 
             for directory in directories:
                 shutil.rmtree(directory, ignore_errors=True)
@@ -243,8 +243,8 @@ class Video(object):
                                                    }
                                            })
             while True:
-                print('Start cycle!')
-                time.sleep(5)
+
+                time.sleep(15)
                 videos = mongo.db.videos.find_one({'torrent_status': 'seeding', 'torrent_progress': 100})
                 if videos is not None:
                     video = Video(videos)
