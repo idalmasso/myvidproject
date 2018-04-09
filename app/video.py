@@ -14,6 +14,7 @@ import time
 
 tc = transmissionrpc.Client('localhost', port=9091)
 
+
 class Video(object):
     title = ''
     image_path = ''
@@ -160,7 +161,7 @@ class Video(object):
             filename = filenames[0]['name']
         if filename is not None:
             self.file_path = os.path.join(current_app.config['FILMS_FOLDER'], filename)
-        Thread( target=self.video_download_procedure,args=(current_app._get_current_object(),)).start()
+
 
     def update_torrent_info(self):
         if self.torrent_id > 0:
@@ -214,33 +215,68 @@ class Video(object):
                                            }
                                    })
 
-    def video_download_procedure(self, app):
+    @staticmethod
+    def video_download_procedure(app):
         with app.app_context():
-            while self.torrent_status != 'seeding' and self.torrent_progress != 100:
-                time.sleep(5)
-                try:
-                    self.update_torrent_info()
-                except KeyError:
-                    return
-            if self.torrent_status == 'seeding' and self.torrent_progress == 100:
-                tc.remove_torrent(self.torrent_id)
-                self.torrent_id = -1
-                self.torrent_status = 'converting'
-                mongo.db.videos.update({'_id': ObjectId(self.id)},
+            videos = mongo.db.videos.find_one({'torrent_status': 'converting'})
+            if videos is not None:
+                print('Converting old video already converting before')
+                video = Video(videos)
+                video.update_torrent_info()
+                video.torrent_status = 'converting'
+                mongo.db.videos.update({'_id': ObjectId(video.id)},
                                        {
                                            '$set':
                                                {
-                                                   'torrent_status': self.torrent_status,
-                                                   'torrent_id': self.torrent_id
+                                                   'torrent_status': video.torrent_status,
                                                }
                                        })
-                self.convert_video(app)
+                try:
+                    video.convert_video(app)
+                except:
+                    video.torrent_status = 'error'
+                    mongo.db.videos.update({'_id': ObjectId(video.id)},
+                                           {
+                                               '$set':
+                                                   {
+                                                       'torrent_status': video.torrent_status,
+                                                   }
+                                           })
+            while True:
+                print('Start cycle!')
+                time.sleep(5)
+                videos = mongo.db.videos.find_one({'torrent_status': 'seeding', 'torrent_progress': 100})
+                if videos is not None:
+                    video = Video(videos)
+                    video.update_torrent_info()
+                    tc.remove_torrent(video.torrent_id)
+                    video.torrent_id = -1
+                    video.torrent_status = 'converting'
+                    mongo.db.videos.update({'_id': ObjectId(video.id)},
+                                           {
+                                               '$set':
+                                                   {
+                                                       'torrent_status': video.torrent_status,
+                                                       'torrent_id': video.torrent_id
+                                                   }
+                                           })
+                    try:
+                        video.convert_video(app)
+                    except:
+                        video.torrent_status = 'error'
+                        mongo.db.videos.update({'_id': ObjectId(video.id)},
+                                               {
+                                                   '$set':
+                                                       {
+                                                           'torrent_status': video.torrent_status,
+                                                       }
+                                               })
 
 
 
     @staticmethod
     def update_video_torrents_info():
-        videos = mongo.db.videos.find({'torrent_id': {'$gte': 0}})
+        videos = mongo.db.videos.find({'torrent_status': {'$ne': 'completed'}})
         for video in videos:
             Video(video).update_torrent_info()
 
@@ -295,3 +331,6 @@ class Video(object):
             for con in con_list:
                 body = body + Video.getunicode(con)
         return body
+
+
+
