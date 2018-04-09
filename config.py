@@ -18,8 +18,3 @@ class Config(object):
         "*": ["-f", "mp4", "-strict", "experimental", "-preset", "ultrafast", "-movflags",
               "frag_keyframe+empty_moov+faststart", "pipe:1"],
         "mp3": ["-f", "mp3", "-codec", "copy", "pipe:1"]}
-<<<<<<< HEAD
-=======
-
-    
->>>>>>> ebd94d503eda71b02e503f63cfb5f1631c56b468

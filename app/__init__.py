@@ -32,6 +32,7 @@ def create_app(config_class=Config):
     app.register_blueprint(videoapp_bp)
     Thread(target=video.Video.video_download_procedure, args=(app,)).start()
     return app
+
 from app import usermodel, video
 
 
