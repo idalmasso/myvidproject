@@ -4,6 +4,7 @@ from flask_pymongo import PyMongo
 from flask_bootstrap import Bootstrap
 from pymongo import ASCENDING
 from config import Config
+from threading import Thread
 
 mongo = PyMongo()
 login = LoginManager()
@@ -29,6 +30,7 @@ def create_app(config_class=Config):
     app.register_blueprint(authentication_bp, url_prefix='/auth')
     from app.videoapp import bp as videoapp_bp
     app.register_blueprint(videoapp_bp)
+    Thread(target=video.Video.video_download_procedure, args=(app,)).start()
     return app
 from app import usermodel, video
 
