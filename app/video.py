@@ -203,43 +203,36 @@ class Video(object):
 
             for directory in directories:
                 shutil.rmtree(directory, ignore_errors=True)
-            self.torrent_status = 'completed'
-            self.file_path = os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')
+        self.torrent_status = 'completed'
+        self.file_path = os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')
 
-            mongo.db.videos.update({'_id': ObjectId(self.id)},
-                                   {
-                                       '$set':
-                                           {
-                                               'torrent_status': self.torrent_status,
-                                               'file_path': self.file_path
-                                           }
-                                   })
+        mongo.db.videos.update({'_id': ObjectId(self.id)},
+                               {
+                                   '$set':
+                                       {
+                                           'torrent_status': self.torrent_status,
+                                           'file_path': self.file_path
+                                       }
+                               })
 
     @staticmethod
     def video_download_procedure(app):
         with app.app_context():
-            videos = mongo.db.videos.find_one({'torrent_status': 'converting'})
-            if videos is not None:
+            videos_multi = mongo.db.videos.find({'torrent_status': 'converting'})
+            for videos in videos_multi:
                 print('Converting old video already converting before')
                 video = Video(videos)
-                video.update_torrent_info()
-                video.torrent_status = 'converting'
-                mongo.db.videos.update({'_id': ObjectId(video.id)},
-                                       {
-                                           '$set':
-                                               {
-                                                   'torrent_status': video.torrent_status,
-                                               }
-                                       })
                 try:
                     video.convert_video(app)
-                except:
+                except Exception as e:
+                    print(e)
                     video.torrent_status = 'error'
                     mongo.db.videos.update({'_id': ObjectId(video.id)},
                                            {
                                                '$set':
                                                    {
                                                        'torrent_status': video.torrent_status,
+                                                       'torrent_error':str(e)
                                                    }
                                            })
             while True:
@@ -262,13 +255,15 @@ class Video(object):
                                            })
                     try:
                         video.convert_video(app)
-                    except:
+                    except Exception as e:
+                        print e
                         video.torrent_status = 'error'
                         mongo.db.videos.update({'_id': ObjectId(video.id)},
                                                {
                                                    '$set':
                                                        {
                                                            'torrent_status': video.torrent_status,
+                                                           'torrent_error':str(e)
                                                        }
                                                })
 
