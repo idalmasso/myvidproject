@@ -187,22 +187,23 @@ class Video(object):
                                    })
 
     def convert_video(self, app):
-        if not os.path.exists(os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')):
-            if os.path.splitext(self.file_path)[1] == '.mp4':
-                print('Moving file')
-                shutil.move(self.file_path, os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4'))
-            else:
-                print('Start ffmpeg')
-                subprocess.run(['ffmpeg', '-i', self.file_path, '-f', 'mp4', '-preset', 'fast', '-vcodec', 'libx264',
-                                '-movflags', 'faststart',
-                                os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')])
-                print('REMOVING FILE '+self.file_path)
-                os.remove(self.file_path)
-            directories = [a for a in os.listdir(app.config['FILMS_FOLDER'] ) if os.path.commonprefix(
-                [a, app.config['FILMS_FOLDER',self.file_path]]) != app.config['FILMS_FOLDER']]
+        if os.path.exists(os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')):
+            os.remove(os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4'))
+        if os.path.splitext(self.file_path)[1] == '.mp4':
+            print('Moving file')
+            shutil.move(self.file_path, os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4'))
+        else:
+            print('Start ffmpeg')
+            subprocess.run(['ffmpeg', '-i', self.file_path, '-f', 'mp4', '-preset', 'fast', '-vcodec', 'libx264',
+                            '-movflags', 'faststart',
+                            os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')])
+            print('REMOVING FILE '+self.file_path)
+            os.remove(self.file_path)
+        directories = [a for a in os.listdir(app.config['FILMS_FOLDER'] ) if os.path.commonprefix(
+            [a, app.config['FILMS_FOLDER',self.file_path]]) != app.config['FILMS_FOLDER']]
 
-            for directory in directories:
-                shutil.rmtree(directory, ignore_errors=True)
+        for directory in directories:
+            shutil.rmtree(directory, ignore_errors=True)
         self.torrent_status = 'completed'
         self.file_path = os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')
 
