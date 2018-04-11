@@ -256,7 +256,7 @@ class Video(object):
                     try:
                         video.convert_video(app)
                     except Exception as e:
-                        print e
+                        print(e)
                         video.torrent_status = 'error'
                         mongo.db.videos.update({'_id': ObjectId(video.id)},
                                                {
