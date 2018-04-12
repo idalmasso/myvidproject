@@ -15,12 +15,12 @@ from pathlib import Path
 
 tc = transmissionrpc.Client('localhost', port=9091)
 
-def delete_first_folder_from_root(folder_path,root_path):
+
+def delete_first_folder_from_root(folder_path, root_path):
     directory = Path(os.path.normpath(folder_path))
     first_directory = Path(os.path.normpath(root_path))
-
-    if len(directory.parents)>len(first_directory.parents):
-        for i in range(0,len(directory.parents)):
+    if len(directory.parents) > len(first_directory.parents)+1:
+        for i in range(0, len(directory.parents)):
             if str(first_directory)==str(directory.parents[i]):
                 shutil.rmtree(str(directory.parents[i-1]))
                 break
@@ -218,7 +218,7 @@ class Video(object):
                             os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')])
             print('REMOVING FILE '+self.file_path)
         file_path = self.file_path
-        delete_first_folder_from_root(file_path,app.config['FILMS_FOLDER'])
+        delete_first_folder_from_root(file_path, app.config['FILMS_FOLDER'])
         self.torrent_status = 'completed'
         self.file_path = os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')
 
@@ -234,6 +234,9 @@ class Video(object):
     @staticmethod
     def video_download_procedure(app):
         with app.app_context():
+            videos = mongo.db.videos.find({'torrent_status': {'$ne': 'completed'}})
+            for video in videos:
+                Video(video).update_torrent_info()
             videos_multi = mongo.db.videos.find({'torrent_status': 'converting'})
             for videos in videos_multi:
                 print('Converting old video already converting before')
@@ -241,19 +244,22 @@ class Video(object):
                 try:
                     video.convert_video(app)
                 except Exception as e:
-                    print(e)
+                    app.logger.info('Exception on convert: ' + e)
                     video.torrent_status = 'error'
                     mongo.db.videos.update({'_id': ObjectId(video.id)},
                                            {
                                                '$set':
                                                    {
                                                        'torrent_status': video.torrent_status,
-                                                       'torrent_error':str(e)
+                                                       'torrent_error': str(e)
                                                    }
                                            })
             while True:
 
                 time.sleep(15)
+                videos = mongo.db.videos.find({'torrent_status': {'$ne': 'completed'}})
+                for video in videos:
+                    Video(video).update_torrent_info()
                 videos = mongo.db.videos.find_one({'torrent_status': 'seeding', 'torrent_progress': 100})
                 if videos is not None:
                     video = Video(videos)
@@ -272,14 +278,14 @@ class Video(object):
                     try:
                         video.convert_video(app)
                     except Exception as e:
-                        print(e)
+                        app.logger.info('Exception on convert: '+e)
                         video.torrent_status = 'error'
                         mongo.db.videos.update({'_id': ObjectId(video.id)},
                                                {
                                                    '$set':
                                                        {
                                                            'torrent_status': video.torrent_status,
-                                                           'torrent_error':str(e)
+                                                           'torrent_error': str(e)
                                                        }
                                                })
 
