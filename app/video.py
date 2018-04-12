@@ -11,8 +11,27 @@ from threading import Thread
 import subprocess
 import shutil
 import time
+from pathlib import Path
 
 tc = transmissionrpc.Client('localhost', port=9091)
+
+def delete_first_folder_from_root(folder_path,root_path):
+    directory = Path(os.path.normpath(folder_path))
+    first_directory = Path(os.path.normpath(root_path))
+
+    if len(directory.parents)>len(first_directory.parents):
+        for i in range(0,len(directory.parents)):
+            if str(first_directory)==str(directory.parents[i]):
+                shutil.rmtree(str(directory.parents[i-1]))
+                break
+        else:
+            raise FileNotFoundError('directory does not have a common with root')
+
+    else:
+        if os.path.isfile(folder_path):
+            os.remove(folder_path)
+        else:
+            raise FileNotFoundError('Cannot delete Root')
 
 
 class Video(object):
@@ -198,12 +217,8 @@ class Video(object):
                             '-movflags', 'faststart',
                             os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')])
             print('REMOVING FILE '+self.file_path)
-            os.remove(self.file_path)
-        directories = [a for a in os.listdir(app.config['FILMS_FOLDER'] ) if os.path.commonprefix(
-            [a, app.config['FILMS_FOLDER',self.file_path]]) != app.config['FILMS_FOLDER']]
-
-        for directory in directories:
-            shutil.rmtree(directory, ignore_errors=True)
+        file_path = self.file_path
+        delete_first_folder_from_root(file_path,app.config['FILMS_FOLDER'])
         self.torrent_status = 'completed'
         self.file_path = os.path.join(app.config['FILMS_FOLDER'], self.id + '.mp4')
 
