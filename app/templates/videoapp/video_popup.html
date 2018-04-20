@@ -1,0 +1,29 @@
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 order-md-1">
+            <ul class="list-group mb-3">
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Duration</h6>
+                    <small class="text-muted">{{ video.duration }}</small>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Rating</h6>
+                    <small class="text-muted">{{ video.rating }}/10</small>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Description</h6>
+                    <small class="text-muted">{{ video.description }}</small>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0">Genres</h6>
+                    <small class="text-muted">{{ ','.join(video.genre) }}</small>
+                </li>
+
+            </ul>
+
+        </div>
+         <div class="col-md-4 order-md-2">
+            <img src="{{ video.image }}" width="60%" height="60%"/>
+        </div>
+    </div>
+</div>
