@@ -42,4 +42,57 @@
         {% endwith %}
         {% block appcontent %}{% endblock %}
         </div>
+
+    {% endblock %}
+    {% block scripts %}
+        {{ super() }}
+        <script>
+            $(function(){
+                var timer=null;
+                $(".video_title").hover(
+                    function(event){
+                        var elem = $(event.currentTarget);
+                        timer=setTimeout(function(){
+                            timer = null;
+                            console.log(elem.find("span").first().text().trim());
+                            xhr = $.ajax(
+                                '/video/' + elem.find("span").first().text().trim() + '/popup').done(
+                                    function(data) {
+                                            xhr = null
+                                            p=elem.popover({
+                                            trigger: 'manual',
+                                            html: true,
+                                            animation: false,
+                                            container: elem,
+                                            content: data,
+                                            title: elem.find("a").first().text().trim()
+                                        });
+                                        p.on("show.bs.popover", function(e){
+                                            p.data("bs.popover").tip().css({"max-width": "800px"});
+                                        });
+                                        p.popover('show')
+
+
+                                    }
+                                );
+                         }, 1000);
+                    },
+                    function(event){
+                        var elem = $(event.currentTarget);
+                        if(timer)
+                        {
+                            clearTimeout(timer);
+                            timer=null;
+                        }
+                         else if (xhr) {
+                            xhr.abort();
+                            xhr = null;
+                        }
+                        else
+                            elem.popover("destroy");
+                    }
+
+                )
+            });
+        </script>
     {% endblock %}

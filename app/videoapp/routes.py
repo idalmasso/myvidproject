@@ -29,10 +29,18 @@ def videolist():
 @login_required
 def video(id):
     video = Video.get_video(id)
-        
     if video.torrent_status == 'completed':
         filename = url_for('videoapp.send_file', id=video.id)
         return render_template('videoapp/video.html', video=video, title=video.title, filename=filename)
+    return redirect(url_for('videoapp.videolist'))
+
+
+@bp.route('/video/<id>/popup')
+@login_required
+def video_popup(id):
+    video = Video.get_video(id)
+    if video is not None:
+        return render_template('videoapp/video_popup.html', video=video)
     return redirect(url_for('videoapp.videolist'))
 
 

@@ -28,7 +28,10 @@
     {% for video in videos %}
     <tr>
         <td>
-            <a href="{{ url_for('videoapp.video_info',id=video.id) }}">{{ video.title }}</a>
+            <div class="video_title">
+                <a href="{{ url_for('videoapp.video_info',id=video.id) }}">{{ video.title }}</a>
+                <span hidden="True">{{ video.id }}</span>
+            </div>
         </td>
         <td>
             {{ video.torrent_status }}
