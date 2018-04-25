@@ -26,22 +26,23 @@
         {% endif %}
     </tr>
     {% for video in videos %}
-    <tr>
+
+    <tr {% if video.torrent_id > 0 %} class="video_downloading" id="{{ video.id }}" {% endif %} >
         <td>
             <div class="video_title">
                 <a href="{{ url_for('videoapp.video_info',id=video.id) }}">{{ video.title }}</a>
                 <span hidden="True">{{ video.id }}</span>
             </div>
         </td>
-        <td>
+        <td class="torrent_status">
             {{ video.torrent_status }}
         </td>
-        <td>
+        <td class="torrent_progress">
             {% if video.torrent_id > 0 %}
             {{'%0.2f' % video.torrent_progress|float}}%
             {% endif %}
         </td>
-         <td>
+         <td class="torrent_eta">
             {% if video.torrent_id > 0 %}
             {{ video.torrent_eta }}
             {% endif %}
@@ -80,4 +81,43 @@
         </li>
     </ul>
 </nav>
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+<script>
+    $(function(){
+        var isRequesting = false;
+        setInterval(function(){
+            if(isRequesting === false){
+                //console.log('enter '+isRequesting);
+                var ids=[]
+                $(".video_downloading").each(function(i,obj){
+                    ids.push($(obj).find(".video_title").find("span").first().text().trim());
+                });
+                if(ids.length > 0) {
+
+                    isRequesting = true;
+                    //console.log('ids length '+isRequesting);
+                    $.post('{{ url_for('videoapp.get_videos_torrent_info') }}', {
+                        'ids[]': ids
+                    }).done(function(response) {
+                        var l = response.length;
+                        for(var i=0;i<l;i++){
+                            $('#'+response[i].id).find('.torrent_status').text(response[i].torrent_status);
+                            $('#'+response[i].id).find('.torrent_progress').text(response[i].torrent_progress.toFixed(2)+'%');
+                            $('#'+response[i].id).find('.torrent_eta').text(response[i].torrent_eta);
+                            isRequesting = false;
+                            //console.log('exit '+isRequesting);
+                            //console.log(response[i]);
+                        }
+                    }).fail(function() {
+                       console.log("failed");
+                       isRequesting = false;
+                    });
+                }
+            }
+        }, 5000);
+    });
+</script>
+
 {% endblock %}

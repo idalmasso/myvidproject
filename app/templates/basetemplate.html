@@ -54,7 +54,6 @@
                         var elem = $(event.currentTarget);
                         timer=setTimeout(function(){
                             timer = null;
-                            console.log(elem.find("span").first().text().trim());
                             xhr = $.ajax(
                                 '/video/' + elem.find("span").first().text().trim() + '/popup').done(
                                     function(data) {

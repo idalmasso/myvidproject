@@ -1,6 +1,6 @@
 from app.videoapp import bp
 from app.videoapp.forms import AddTorrentForm
-from flask import url_for, request, render_template, send_from_directory, current_app, flash,redirect
+from flask import url_for, request, render_template, send_from_directory, current_app, flash,redirect, jsonify
 from flask_login import login_required, current_user
 from app.video import Video
 import os
@@ -97,6 +97,21 @@ def delete_video(id):
     if current_user.admin:
         Video.get_video(id).remove_video()
     return redirect(url_for('videoapp.videolist'))
+
+
+@bp.route('/get_videos_torrent_info', methods=['POST'])
+@login_required
+def get_videos_torrent_info():
+    videoids = request.form.getlist('ids[]')
+    resp = []
+    for id in videoids:
+        video = Video.get_video(id)
+        video.update_torrent_info()
+        resp.append({'id': video.id,
+                     'torrent_status': video.torrent_status,
+                     'torrent_eta': video.torrent_eta,
+                     'torrent_progress': video.torrent_progress})
+    return jsonify(resp)
 
 
 def allowed_file(filename):
